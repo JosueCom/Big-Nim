@@ -29,24 +29,23 @@
     }
 
     function createX(x, y) {
-        // create our little bunny friend..
-        const bunny = new PIXI.Sprite(texture);
+        const x_target = new PIXI.Sprite(texture);
 
-        // enable the bunny to be interactive... this will allow it to respond to mouse and touch events
-        bunny.interactive = true;
+        // enable the x to be interactive... this will allow it to respond to mouse and touch events
+        x_target.interactive = true;
 
-        // this button mode will mean the hand cursor appears when you roll over the bunny with your mouse
-        bunny.buttonMode = true;
+        // this button mode will mean the hand cursor appears when you roll over the x with your mouse
+        x_target.buttonMode = true;
 
-        // center the bunny's anchor point
-        bunny.anchor.set(0.5);
+        // center the x's anchor point
+        x_target.anchor.set(0.5);
 
-        // make it a bit bigger, so it's easier to grab
-        bunny.scale.set(0.2);
+        // make x smaller
+        x_target.scale.set(0.2);
 
         // setup events for mouse + touch using
         // the pointer events
-        bunny
+        x_target
             .on('pointerdown', onDragStart)
             .on('pointerup', onDragEnd)
             .on('pointerupoutside', onDragEnd)
@@ -65,11 +64,11 @@
         // .on('touchmove', onDragMove);
 
         // move the sprite to its designated position
-        bunny.x = x;
-        bunny.y = y;
+        x_target.x = x;
+        x_target.y = y;
 
         // add it to the stage
-        app.stage.addChild(bunny);
+        app.stage.addChild(x_target);
     }
 
     function onDragStart(event) {
