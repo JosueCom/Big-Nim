@@ -97,17 +97,25 @@ const app = new PIXI.Application({transparent: true, width: window.innerWidth - 
 
 document.body.appendChild(app.view);
 
+var xs_cont = new PIXI.Container();
+
+const graphics = new PIXI.Graphics();
+
 PIXI.loader
 	.add("assets/images/x.png")
 	.load(setup);
 
 let dragging = [-1, -1];
-let isDragging = false;
+let isDrawing = false;
 let level = -1;
+const map = [3, 5, 7];
+let map_play = [[1, 1, 1, 0, 0, 0, 0], 
+				[1, 1, 1, 1, 1, 0, 0], 
+				[1, 1, 1, 1, 1, 1, 1]];
+
+let ai = new AI();
 
 function setup() {
-
-	let xs_cont = new PIXI.Container();
 
 	let rows = createXs(xs_cont);
 
@@ -119,12 +127,13 @@ function setup() {
 	xs_cont.position.y = (app.stage.height / 2) + (xs_cont.width / 2);
 
 	app.stage.addChild(xs_cont);
+	app.stage.addChild(graphics);
+
+	gameloop();
 
 }
 
 function createXs(cont) {
-	
-	let map = [3, 5, 7];
 
 	let level_cont = [new PIXI.Container(),
 						new PIXI.Container(),
@@ -190,13 +199,13 @@ function onDragXStart(event) {
     // the reason for this is because of multitouch
     // we want to track the movement of this particular touch
     this.data = event.data;
+    isDrawing = true;
     dragging[0] = this.id;
 }
 
 function onDragXEnd() {
     // set the interaction data to null
 
-    isDragging = false;
     dragging[1] = this.id;
     this.data = null;
 }
@@ -204,6 +213,39 @@ function onDragXEnd() {
 function onDragRowEnd() {
     level = this.level;
 
+    isDrawing = false;
     console.log(dragging);
     console.log(level);
+
+    drawLine(level, dragging);
+}
+
+function drawLine(level, set){
+	graphics.lineStyle(6, 0x0000ff);
+	graphics.beginFill(0x650A5A);
+
+	let x_pos1 = xs_cont.children[level].children[set[0]].x + xs_cont.children[level].x + xs_cont.x;
+	let y_pos1 = xs_cont.children[level].children[set[0]].y + xs_cont.children[level].y + xs_cont.y;
+	let x_pos2 = xs_cont.children[level].children[set[1]].x + xs_cont.children[level].x + xs_cont.x;
+	let y_pos2 = xs_cont.children[level].children[set[1]].y + xs_cont.children[level].y + xs_cont.y;
+
+
+	graphics.drawRoundedRect(x_pos1, y_pos1, x_pos2-x_pos1, 5, 1);
+	graphics.endFill();
+}
+
+function hasGameEnded(map){
+	let count = 0;
+
+	for (var i = 0; i < map.length; i++) {
+		for (var j = 0; j < map[i].length; j++) {
+			if (map[i][j] == 1) count++;
+		}
+	}
+
+	return count > 0;
+}
+
+function gameloop(){
+
 }
