@@ -102,6 +102,7 @@ PIXI.loader
 	.load(setup);
 
 let dragging = [-1, -1];
+let isDragging = false;
 let level = -1;
 
 function setup() {
@@ -129,7 +130,7 @@ function createXs(cont) {
 						new PIXI.Container(),
 						new PIXI.Container()];
 
-	//Add x to appropiate row
+	//Add xs to appropiate row
 	for (var i = 0; i < map.length; i++) {
 		let xs = createXRow(i, map[i], map[map.length - 1]);
 
@@ -139,6 +140,9 @@ function createXs(cont) {
 
 		//level_cont[i].position.x = (cont.width / 2) - (level_cont[i].width / 2);
 		level_cont[i].position.y = i * 100;
+		level_cont[i].interactive = true;
+		level_cont[i].level = i;
+		level_cont[i].on('pointerup', onDragRowEnd);
 	}
 
 	return level_cont;
@@ -150,7 +154,6 @@ function createXRow(level, n, l) {
 	for (var i = 0; i < n; i++) {
 		let x_icon = createX((i + (l-n)/2) * 100, level);
 		x_icon.id = i;
-		x_icon.level = level;
 
 		xs.push(x_icon);
 	}
@@ -158,7 +161,7 @@ function createXRow(level, n, l) {
 	return xs;
 }
 
-function createX(x, y, texture) {
+function createX(x, y) {
 
 	let x_texture = PIXI.loader.resources["assets/images/x.png"].texture;
 
@@ -174,9 +177,7 @@ function createX(x, y, texture) {
 
     x_icon
         .on('pointerdown', onDragXStart)
-        .on('pointerup', onDragXEnd)
-        .on('pointerupoutside', onDragXEnd)
-        .on('pointermove', onDragXMove);
+        .on('pointerup', onDragXEnd);
 
     x_icon.x = x;
     x_icon.y = y;
@@ -195,11 +196,14 @@ function onDragXStart(event) {
 function onDragXEnd() {
     // set the interaction data to null
 
+    isDragging = false;
     dragging[1] = this.id;
     this.data = null;
-    console.log(dragging);
 }
 
-function onDragXMove() {
-    
+function onDragRowEnd() {
+    level = this.level;
+
+    console.log(dragging);
+    console.log(level);
 }
