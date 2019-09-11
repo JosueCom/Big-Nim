@@ -131,7 +131,7 @@ function getSet(map, n, max, level){
 
 	console.log("Hey");
 
-	while(count <= n && count < max) {
+	while(count < n && count < max) {
 		end++;
 
 		if(map[level][end] == 1){

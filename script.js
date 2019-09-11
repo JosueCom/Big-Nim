@@ -126,6 +126,10 @@ function onDragRowEnd() {
     console.log(dragging);
     console.log(level);
 
+    if (Math.max(...map_play[level].slice(dragging[0], dragging[1] + 1)) == 0) {
+    	return;
+    }
+
     if (playerTurn  && !hasGameEnded()) {
 	    drawLine(level, dragging, 0x00ff00);
 
@@ -143,14 +147,18 @@ function onDragRowEnd() {
 function drawLine(level, set, color){
 	graphics.lineStyle(6, color, 0.9);
 	graphics.beginFill(color); //0x650A5A
+	let buff = 0;
 
 	let x_pos1 = xs_cont.children[level].children[set[0]].x + xs_cont.children[level].x + xs_cont.x;
 	let y_pos1 = xs_cont.children[level].children[set[0]].y + xs_cont.children[level].y + xs_cont.y;
 	let x_pos2 = xs_cont.children[level].children[set[1]].x + xs_cont.children[level].x + xs_cont.x;
 	let y_pos2 = xs_cont.children[level].children[set[1]].y + xs_cont.children[level].y + xs_cont.y;
 
+	if (set[1] - set[0] == 0) {
+		buff = 10;
+	}
 
-	graphics.drawRoundedRect(x_pos1, y_pos1, x_pos2-x_pos1, 5, 0.5);
+	graphics.drawRoundedRect(x_pos1 - buff, y_pos1, x_pos2-x_pos1 + buff, 5, 0.5);
 	graphics.endFill();
 }
 
