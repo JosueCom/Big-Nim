@@ -1,97 +1,3 @@
-/*const app = new PIXI.Application({transparent: true, width: window.innerWidth, height: window.innerHeight});
-
-document.body.appendChild(app.view);
-
-app.renderer.autoResize = true;
-app.renderer.resize(window.innerWidth, window.innerHeight);
-
-
-
-// create a texture from an image path
-const texture = PIXI.Texture.from("assets/images/x.png");
-
-
-// Scale mode for pixelation
-texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
-
-for (let i = 0; i < 10; i++) {
-    createX(
-        Math.floor(Math.random() * 0.9 * app.screen.width),
-        Math.floor(Math.random() * 0.9 * app.screen.height),
-    );
-}
-
-function createX(x, y) {
-    // create our little bunny friend..
-    const bunny = new PIXI.Sprite(texture);
-
-    // enable the bunny to be interactive... this will allow it to respond to mouse and touch events
-    bunny.interactive = true;
-
-    // this button mode will mean the hand cursor appears when you roll over the bunny with your mouse
-    bunny.buttonMode = true;
-
-    // center the bunny's anchor point
-    bunny.anchor.set(0.5);
-
-    // make it a bit bigger, so it's easier to grab
-    bunny.scale.set(0.2);
-
-    // setup events for mouse + touch using
-    // the pointer events
-    bunny
-        .on('pointerdown', onDragStart)
-        .on('pointerup', onDragEnd)
-        .on('pointerupoutside', onDragEnd)
-        .on('pointermove', onDragMove);
-
-    // For mouse-only events
-    // .on('mousedown', onDragStart)
-    // .on('mouseup', onDragEnd)
-    // .on('mouseupoutside', onDragEnd)
-    // .on('mousemove', onDragMove);
-
-    // For touch-only events
-    // .on('touchstart', onDragStart)
-    // .on('touchend', onDragEnd)
-    // .on('touchendoutside', onDragEnd)
-    // .on('touchmove', onDragMove);
-
-    // move the sprite to its designated position
-    bunny.x = x;
-    bunny.y = y;
-
-    // add it to the stage
-    app.stage.addChild(bunny);
-}
-
-function onDragStart(event) {
-    // store a reference to the data
-    // the reason for this is because of multitouch
-    // we want to track the movement of this particular touch
-    this.data = event.data;
-    this.alpha = 0.5;
-    this.dragging = true;
-}
-
-function onDragEnd() {
-    this.alpha = 1;
-    this.dragging = false;
-    // set the interaction data to null
-    this.data = null;
-}
-
-function onDragMove() {
-    if (this.dragging) {
-        const newPosition = this.data.getLocalPosition(this.parent);
-        this.x = newPosition.x;
-        this.y = newPosition.y;
-    }
-}
-
-function setup(){
-    
-}*/
 
 const app = new PIXI.Application({transparent: true, width: window.innerWidth - 20, height: window.innerHeight - 20});
 
@@ -101,19 +7,22 @@ var xs_cont = new PIXI.Container();
 
 const graphics = new PIXI.Graphics();
 
+let ai = new AI();
+
 PIXI.loader
 	.add("assets/images/x.png")
 	.load(setup);
 
 let dragging = [-1, -1];
 let isDrawing = false;
+let playerTurn = true;
 let level = -1;
 const map = [3, 5, 7];
 let map_play = [[1, 1, 1, 0, 0, 0, 0], 
 				[1, 1, 1, 1, 1, 0, 0], 
 				[1, 1, 1, 1, 1, 1, 1]];
 
-let ai = new AI();
+setInterval(gameloop, 500);
 
 function setup() {
 
@@ -128,8 +37,6 @@ function setup() {
 
 	app.stage.addChild(xs_cont);
 	app.stage.addChild(graphics);
-
-	gameloop();
 
 }
 
@@ -206,7 +113,9 @@ function onDragXStart(event) {
 function onDragXEnd() {
     // set the interaction data to null
 
-    dragging[1] = this.id;
+    dragging[1] = Math.max(this.id, dragging[0]);
+    dragging[0] = Math.min(this.id, dragging[0]);
+
     this.data = null;
 }
 
@@ -217,12 +126,23 @@ function onDragRowEnd() {
     console.log(dragging);
     console.log(level);
 
-    drawLine(level, dragging);
+    if (playerTurn  && !hasGameEnded()) {
+	    drawLine(level, dragging, 0x00ff00);
+
+	    updateMap(level, dragging);
+
+	    playerTurn = false;
+
+	    if (hasGameEnded()) {
+			alert("You have won the game! If you want to know how we did this and other things, you should come to our club.");
+			location.reload();
+		}
+    }
 }
 
-function drawLine(level, set){
-	graphics.lineStyle(6, 0x0000ff);
-	graphics.beginFill(0x650A5A);
+function drawLine(level, set, color){
+	graphics.lineStyle(6, color, 0.9);
+	graphics.beginFill(color); //0x650A5A
 
 	let x_pos1 = xs_cont.children[level].children[set[0]].x + xs_cont.children[level].x + xs_cont.x;
 	let y_pos1 = xs_cont.children[level].children[set[0]].y + xs_cont.children[level].y + xs_cont.y;
@@ -230,22 +150,50 @@ function drawLine(level, set){
 	let y_pos2 = xs_cont.children[level].children[set[1]].y + xs_cont.children[level].y + xs_cont.y;
 
 
-	graphics.drawRoundedRect(x_pos1, y_pos1, x_pos2-x_pos1, 5, 1);
+	graphics.drawRoundedRect(x_pos1, y_pos1, x_pos2-x_pos1, 5, 0.5);
 	graphics.endFill();
 }
 
-function hasGameEnded(map){
+function updateMap(level, set){
+	
+	for (var i = Math.min(...set); i <= Math.max(...set); i++) {
+		map_play[level][i] = 0;
+	}
+}
+
+function hasGameEnded(){
 	let count = 0;
 
-	for (var i = 0; i < map.length; i++) {
-		for (var j = 0; j < map[i].length; j++) {
-			if (map[i][j] == 1) count++;
+	for (var i = 0; i < map_play.length; i++) {
+		for (var j = 0; j < map_play[i].length; j++) {
+			if (map_play[i][j] == 1) count++;
 		}
 	}
 
-	return count > 0;
+	return count <= 1;
 }
 
 function gameloop(){
 
+	if(!playerTurn && !hasGameEnded()) {
+
+		let move = ai.play(map_play);
+
+		drawLine(move.level, move.set, 0xff00ff);
+		updateMap(move.level, move.set);
+		playerTurn = true;
+
+		if (hasGameEnded()) {
+			alert("You have lost the game! Now, you must come to our first meeting!");
+		}
+	}
+}
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
 }
